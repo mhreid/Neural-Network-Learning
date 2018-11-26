@@ -42,27 +42,29 @@ def make_layers(input_size, output_size, num):
 def sigmoid(x):
     return 1 / (1 + math.exp(-x))
 
-def vector_sigmoid(matrix):
+def vector_sigmoid(vector):
     out = []
-    for i in range(len(matrix)):
-        out.append(sigmoid(matrix[i]))
+    for x in vector:
+        out.append(sigmoid(x))
     return out
 
 def forward(layers, data):
-    for layer in layers:
-        print("starting dot product")
-        data = np.dot(data, layer)
-        print(data)
-        print("successful dot product")
-        data = vector_sigmoid(data)
-    return data
+    out = []
+    for d in data:
+        x = d[1]
+        for layer in layers:
+            x = np.dot(x, layer)
+            x = vector_sigmoid(x)
+        out.append([d[0], x])
+    return out
 
 if __name__ == '__main__':
     data = make_traindata()
-    data = data[1][1]
+    data = data
     print("data made")
-    size = len(data)
+    size = len(data[0][1])
     layers = make_layers(size,10,1)
     print("layers made")
     out = forward(layers, data)
-    print(out)
+    print("done!!")
+    print(out[0][1])
