@@ -83,7 +83,8 @@ def gradients(nums, a, z, layers):
     d_layers = []
     d_cost = [np.multiply(-d_loss_sum_all(nums, a[-1]), sigmoid_all(z[-1], sigmoid_derivative))]
     print(d_cost[0][0].shape)
-    d_layers.append((np.dot(d_cost[-1].T,a[-2])))
+    d_layers.append(np.dot(a[-2].T,d_cost[-1]))
+
     for i in range(len(layers) - 2, -1, -1):
         print(i)
         #i = 0
@@ -91,7 +92,7 @@ def gradients(nums, a, z, layers):
         d_cost.append(np.multiply(np.dot(d_cost[-1], layers[i + 1].T), sigmoid_all(z[i], sigmoid_derivative)))
 
 
-        d_layers.append((np.dot(a[i].T, d_cost[-1]))[0])
+        d_layers.append(np.dot(a[i].T, d_cost[-1]))
     d_layers.reverse()
     return d_layers
 
@@ -120,11 +121,9 @@ if __name__ == '__main__':
     print("layers")
     for layer in layers:
         print(layer[0].shape)
-        #ndarray
     print("d layers")
     for layer in d_layers:
         print(layer[0].shape)
-        #matrix
 
     layers = d_layers, 0.001
 
