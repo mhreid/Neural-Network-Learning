@@ -9,6 +9,7 @@ training = pd.read_csv('mnist_train.csv')
 
 
 def make_traindata():
+    #tested and works
     nums = training.iloc[:,0]
     nums = nums.as_matrix()
     data = training.iloc[:,1:]
@@ -16,17 +17,13 @@ def make_traindata():
     return nums,data
 
 def make_rand_layer(input, output):
-    """layer = []
-    for i in range(input):
-        row = []
-        for j in range(output):
-            row.append(random.random())
-        layer.append(row)"""
-    layer = np.random.rand(input, output) * .01
-
+    #tested and works
+    layer = np.random.rand(input, output) *.01
     return layer
 
 def make_layers(input_size, output_size, num):
+    #tested and works
+    #should have a minimum of two layers for num, which is equivalent to 1 hidden layer
     hidden_size = 20
     layers = []
     if(num <= 1):
@@ -41,48 +38,90 @@ def make_layers(input_size, output_size, num):
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
-def sigmoid_all(x):
-    sig = np.array([[sigmoid(i) for i in j] for j in x])
+def sigmoid_all(x, func):
+    #tested and works
+    sig = np.array([[func(i) for i in j] for j in x])
     return sig
 
 
 def forward(layers, data):
+    #tested and works
     a = []
     z = []
-    a.append(data.T)
+    a.append(data)
     for layer in layers:
         print("layer")
         z.append(np.dot(a[-1], layer))
-        a.append(sigmoid_all(z[-1]))
-    return a[1:], z
+        a.append(sigmoid_all(z[-1], sigmoid))
+    return a, z
 
 def sigmoid_derivative(x):
     return sigmoid(x) * (1 - sigmoid(x))
 
-def w_sum(num):
-    sum = 0
-    for i in range(len(num[1])):
-        print("layer " + str(i))
-        if(num[0] == i - 1):
-            sum += (1 - num[1][i]) ** 2
-        else:
-            sum += num[1][i] ** 2
-    return sum
+def d_loss_sum(num, y_hat):
+    #tested and works
+    y = [0 for i in range(len(y_hat))]
+    y[num] = 1
+    return 2 * (y - y_hat)
 
-def w_sum_all(data):
-    sum = 0
-    for d in data:
-        sum += w_sum(d)
-    print(sum)
-    sum /= len(data)
-    print(len(data))
-    return sum
+def d_loss_sum_all(nums, y_hats):
+    #tested and works
+    sum = []
+    for i in range(nums.shape[0]):
+        sum.append(d_loss_sum(nums[i], y_hats[:][i]))
+    return np.matrix(sum)
+
+def gradients(nums, a, z, layers):
+    #a 0,1,2 z 1,2, l 1,2
+    #their activation numbers match mine
+    #their weights also match mine
+    #z should always be minus 1
+    #layer dimensions in order: 784 x 20, 20 x 10
+    #but we calculate the derivatives backwards
+    #in progress, need to work on transposes being correct
+    m = len(nums)
+    print("original layer")
+    print(layers[-1].shape)
+    d_layers = []
+    print(d_loss_sum_all(nums, a[-1]).shape)
+    print(sigmoid_all(a[-1], sigmoid_derivative).shape)
+    d_cost = [np.multiply(d_loss_sum_all(nums, a[-1]), sigmoid_all(a[-1], sigmoid_derivative))]
+    d_layers.append(np.dot(a[-2].T,d_cost[-1]))
+    for i in range(len(layers) - 2, -1, -1):
+        print(i)
+        #i = 0
+
+        d_cost.append(np.multiply(np.dot(d_cost[-1], layers[i + 1].T), sigmoid_all(a[i + 1], sigmoid_derivative)))
+        d_layers.append(1 / m * np.dot(a[i].T, d_cost[-1]))
+    d_layers.reverse()
+    return d_layers
+
+def back_prop(nums, a, z, layers, step, runs):
+    for i in range(runs):
+        print("run " + str(i))
+        gradient = gradients(nums, a, z, layers)
+        layers += np.multiply(gradient, step)
+    return layers
 
 
 if __name__ == '__main__':
     nums, data = make_traindata()
-    print(data.shape[0])
-    layers = make_layers(data.shape[0], 10, 3)
-    print(len(layers))
+    #print(data.shape[0])
+    print(nums[1])
+    print(data[1][200:250])
+    layers = make_layers(data.shape[1], 10, 3)
+    print(layers[0].shape)
+    #keep num as two for 1 hidden layer
+    #print(len(layers))
     a,z = forward(layers, data)
-    print(a[-1][0])
+
+    d_layers = gradients(nums, a, z, layers)
+    #print(d_layers[-1])
+    #print(layers[1])
+    #print(len(layers))
+    layers = back_prop(nums, a, z, layers, .01, 4)
+    print(layers[1])
+
+    a,z = forward(layers, data)
+    print(a[-1][1])
+    print(nums[1])
