@@ -49,7 +49,6 @@ def forward(layers, data):
     a = [data]
     z = []
     for layer in layers:
-        print("layer")
         z.append(np.dot(a[-1], layer))
         a.append(sigmoid_all(z[-1], sigmoid))
     return a, z
@@ -78,17 +77,12 @@ def gradients(nums, a, z, layers):
     #layer dimensions in order: 784 x 20, 20 x 10
     #but we calculate the derivatives backwards
     #in progress, need to work on transposes being correct
-    print("original layer")
-    print(layers[-1].shape)
+
     d_layers = []
     d_cost = [np.multiply(-d_loss_sum_all(nums, a[-1]), sigmoid_all(z[-1], sigmoid_derivative))]
-    print(d_cost[0][0].shape)
     d_layers.append(np.dot(a[-2].T,d_cost[-1]))
 
     for i in range(len(layers) - 2, -1, -1):
-        print(i)
-        #i = 0
-
         d_cost.append(np.multiply(np.dot(d_cost[-1], layers[i + 1].T), sigmoid_all(z[i], sigmoid_derivative)))
 
 
@@ -97,58 +91,26 @@ def gradients(nums, a, z, layers):
     return d_layers
 
 def back_prop(layers, data, nums, step, runs):
-    for i in range(runs):
+    a,z = forward(layers, data)
+
+    for j in range(runs):
+        print("backpropagation " + str(j + 1) + " out of " + str(runs))
+        d_layers = gradients(nums, a, z, layers)
+        for i in range(len(layers)):
+            layers[i] -= np.asarray(d_layers[i]) * step
+
         a,z = forward(layers, data)
-        #yhat shape
-        print("run " + str(i))
-        gradient = gradients(nums, a, z, layers)
-        layers -= np.multiply(gradient, step)
-    return layers
+    return layers, a[-1]
 
 
 if __name__ == '__main__':
     nums, data = make_traindata()
-    nums = nums[:2]
-    data = data[:2]
-    #print(data.shape[0])
-    #print(data[1][200:250])
+
     layers = make_layers(data.shape[1], 10, 2)
-    print(layers[0].shape)
-    #keep num as two for 1 hidden layer
-    #print(len(layers))
-    a,z = forward(layers, data)
+    layers, output = back_prop(layers, data, nums, .0001, 10)
 
 
-    d_layers = gradients(nums, a, z, layers)
-    #print("layers")
-    #for layer in layers:
-    #    print(layer[0].shape)
-    #print("d layers")
-    #for layer in d_layers:
-#        print(np.asarray(layer)[0].shape)
-    print(a[-1][1])
+    print(output[1])
     print(nums[1])
-    for i in range(len(layers)):
-        layers[i] -= np.asarray(d_layers[i]) * .01
-
-    a,z = forward(layers, data)
-    for j in range(200):
-        d_layers = gradients(nums, a, z, layers)
-        for i in range(len(layers)):
-            layers[i] -= np.asarray(d_layers[i]) *.1
-
-        a,z = forward(layers, data)
-
-
-
-    #print(d_layers[-1])
-    #print(layers[1])
-    #print(len(layers))
-    #layers = back_prop(layers, data, nums, .0001, 4)
-    #print(layers[-1])
-
-    #a,z = forward(layers, data)
-    print(a[-1][1])
-    print(nums[1])
-    print(a[-1][0])
+    print(output[0])
     print(nums[0])
