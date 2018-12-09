@@ -108,8 +108,9 @@ def back_prop(layers, data, nums, step, runs):
 
 if __name__ == '__main__':
     nums, data = make_traindata()
+    nums = nums[:2]
+    data = data[:2]
     #print(data.shape[0])
-    print(nums[1])
     #print(data[1][200:250])
     layers = make_layers(data.shape[1], 10, 2)
     print(layers[0].shape)
@@ -117,19 +118,26 @@ if __name__ == '__main__':
     #print(len(layers))
     a,z = forward(layers, data)
 
-    d_layers = gradients(nums, a, z, layers)
-    print("layers")
-    for layer in layers:
-        print(layer[0].shape)
-    print("d layers")
-    for layer in d_layers:
-        print(layer[0].shape)
 
-    layers = d_layers, 0.001
+    d_layers = gradients(nums, a, z, layers)
+    #print("layers")
+    #for layer in layers:
+    #    print(layer[0].shape)
+    #print("d layers")
+    #for layer in d_layers:
+#        print(np.asarray(layer)[0].shape)
+    print(a[-1][1])
+    print(nums[1])
+    for i in range(len(layers)):
+        layers[i] -= np.asarray(d_layers[i]) * .01
 
     a,z = forward(layers, data)
-    print(a[-1].shape)
+    for j in range(200):
+        d_layers = gradients(nums, a, z, layers)
+        for i in range(len(layers)):
+            layers[i] -= np.asarray(d_layers[i]) *.1
 
+        a,z = forward(layers, data)
 
 
 
@@ -140,5 +148,7 @@ if __name__ == '__main__':
     #print(layers[-1])
 
     #a,z = forward(layers, data)
-    #print(a[-1][1])
-    #print(nums[1])
+    print(a[-1][1])
+    print(nums[1])
+    print(a[-1][0])
+    print(nums[0])
