@@ -116,13 +116,27 @@ def back_prop(layers, biases, data, nums, step, runs):
 
 
 if __name__ == '__main__':
+    #REALLY GOOD EXAMPLE
+
     nums, data = make_traindata()
-    nums = nums[:2000]
-    data = data[:2000]
+    nums = nums[:10]
+    data = data[:10]
     layers, biases = make_layers(data.shape[1], 10, 3)
-    layers, output = back_prop(layers, biases, data, nums, .1, 30)
-    #a, z = forward(layers, biases, data)
-    #output = a[-1]
+    layers, output = back_prop(layers, biases, data, nums, .1, 50)
+    print(output[1])
+    print(nums[1])
+    print(output[8])
+    print(nums[8])
+    print(output[7])
+    print(nums[7])
+
+    #Example of how it poorly handles complexity:
+
+    nums, data = make_traindata()
+    nums = nums[:1000]
+    data = data[:1000]
+    layers, biases = make_layers(data.shape[1], 10, 3)
+    layers, output = back_prop(layers, biases, data, nums, .1, 50)
     print(output[1])
     print(nums[1])
     print(output[8])
