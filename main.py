@@ -18,13 +18,13 @@ def make_traindata():
 
 def make_rand_layer(input, output):
     #tested and works
-    layer = np.random.rand(input, output) *.01
+    layer = np.random.rand(input, output) - .5
     return layer
 
 def make_layers(input_size, output_size, num):
     #tested and works
     #should have a minimum of two layers for num, which is equivalent to 1 hidden layer
-    hidden_size = 20
+    hidden_size = 100
     layers = []
     if(num <= 1):
         layers.append(make_rand_layer(input_size, output_size))
@@ -45,7 +45,7 @@ def sigmoid_all(x, func):
 
 
 def forward(layers, data):
-    #tested and works
+    #tested and is giving same answer regardless of input unless weights are super super small
     a = [data]
     z = []
     for layer in layers:
@@ -81,7 +81,6 @@ def gradients(nums, a, z, layers):
     d_layers = []
     d_cost = [np.multiply(-d_loss_sum_all(nums, a[-1]), sigmoid_all(z[-1], sigmoid_derivative))]
     d_layers.append(np.dot(a[-2].T,d_cost[-1]))
-
     for i in range(len(layers) - 2, -1, -1):
         d_cost.append(np.multiply(np.dot(d_cost[-1], layers[i + 1].T), sigmoid_all(z[i], sigmoid_derivative)))
 
@@ -91,25 +90,25 @@ def gradients(nums, a, z, layers):
     return d_layers
 
 def back_prop(layers, data, nums, step, runs):
-    a,z = forward(layers, data)
-
     for j in range(runs):
+        a,z = forward(layers, data)
         print("backpropagation " + str(j + 1) + " out of " + str(runs))
         d_layers = gradients(nums, a, z, layers)
         for i in range(len(layers)):
+            print(layers[i])
             layers[i] -= np.asarray(d_layers[i]) * step
+            print(layers[i])
 
-        a,z = forward(layers, data)
+    a,z = forward(layers, data)
     return layers, a[-1]
 
 
 if __name__ == '__main__':
     nums, data = make_traindata()
-
+    nums = nums[:2]
+    data = data[:2]
     layers = make_layers(data.shape[1], 10, 2)
-    layers, output = back_prop(layers, data, nums, .0001, 10)
-
-
+    layers, output = back_prop(layers, data, nums, .1, 100)
     print(output[1])
     print(nums[1])
     print(output[0])
