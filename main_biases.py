@@ -22,8 +22,6 @@ def make_rand_layer(input, output):
     return layer
 
 def make_layers(input_size, output_size, num):
-    #tested and works
-    #should have a minimum of two layers for num, which is equivalent to 1 hidden layer
     hidden_size = 200
     layers = []
     biases = []
@@ -49,7 +47,6 @@ def sigmoid_all(x, func):
 
 
 def forward(layers, biases, data):
-    #tested and is giving same answer regardless of input unless weights are super super small
     a = [data]
     z = []
     for i in range(len(layers)):
@@ -74,13 +71,6 @@ def d_loss_sum_all(nums, y_hats):
     return np.matrix(sum)
 
 def gradients(nums, a, z, layers, biases):
-    #a 0,1,2 z 1,2, l 1,2
-    #their activation numbers match mine
-    #their weights also match mine
-    #z should always be minus 1
-    #layer dimensions in order: 784 x 20, 20 x 10
-    #but we calculate the derivatives backwards
-    #in progress, need to work on transposes being correct
 
     d_layers = []
     d_biases = []
@@ -119,9 +109,16 @@ if __name__ == '__main__':
     #really good example
 
     nums, data = make_traindata()
+
     nums = nums[:10]
     data = data[:10]
     layers, biases = make_layers(data.shape[1], 10, 3)
+
+    a, z = forward(layers, biases, data)
+    print(a[-1][1])
+    print(nums[1])
+
+
     layers, output = back_prop(layers, biases, data, nums, .1, 50)
     print(output[1])
     print(nums[1])
@@ -129,17 +126,17 @@ if __name__ == '__main__':
     print(nums[8])
     print(output[7])
     print(nums[7])
-
+"""
     #Example of how it poorly handles complexity:
 
     nums, data = make_traindata()
     nums = nums[:1000]
     data = data[:1000]
     layers, biases = make_layers(data.shape[1], 10, 3)
-    layers, output = back_prop(layers, biases, data, nums, .1, 50)
+    layers, output = back_prop(layers, biases, data, nums, .1, 20)
     print(output[1])
     print(nums[1])
     print(output[8])
     print(nums[8])
     print(output[7])
-    print(nums[7])
+    print(nums[7])"""
