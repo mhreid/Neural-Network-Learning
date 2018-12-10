@@ -24,7 +24,7 @@ def make_rand_layer(input, output):
 def make_layers(input_size, output_size, num):
     #tested and works
     #should have a minimum of two layers for num, which is equivalent to 1 hidden layer
-    hidden_size = 100
+    hidden_size = 200
     layers = []
     biases = []
     if(num <= 1):
@@ -35,8 +35,8 @@ def make_layers(input_size, output_size, num):
             layers.append(make_rand_layer(hidden_size, hidden_size))
         layers.append(make_rand_layer(hidden_size, output_size))
     for i in range(num - 1):
-        biases.append(np.random.rand(1, hidden_size))
-    biases.append(np.random.rand(1, output_size))
+        biases.append(np.random.rand(1, hidden_size) / 2 + .2)
+    biases.append(np.random.rand(1, output_size) / 2 + .2)
     return layers, biases
 
 def sigmoid(x):
@@ -85,6 +85,7 @@ def gradients(nums, a, z, layers, biases):
     d_layers = []
     d_biases = []
     d_cost = [np.multiply(-d_loss_sum_all(nums, a[-1]), sigmoid_all(z[-1], sigmoid_derivative))]
+    print("Current Cost: " + str(np.sum(d_cost)))
     d_layers.append(np.dot(a[-2].T,d_cost[-1]))
     d_biases.append(np.sum(d_cost[-1]))
     for i in range(len(layers) - 2, -1, -1):
@@ -96,18 +97,19 @@ def gradients(nums, a, z, layers, biases):
     return d_layers, d_biases
 
 def back_prop(layers, biases, data, nums, step, runs):
+    m = len(nums)
     for j in range(runs):
         a,z = forward(layers, biases, data)
         output = a[-1]
-        print(output[1])
-        print(nums[1])
-        print(output[0])
-        print(nums[0])
+        #print(output[1])
+        #print(nums[1])
+        #print(output[0])
+        #print(nums[0])
         print("backpropagation " + str(j + 1) + " out of " + str(runs))
         d_layers, d_biases = gradients(nums, a, z, layers, biases)
         for i in range(len(layers)):
-            layers[i] -= np.asarray(d_layers[i]) * step
-            biases[i] -= d_biases[i] * step
+            layers[i] -= np.asarray(d_layers[i]) * step / m
+            biases[i] -= d_biases[i] * step / m
 
     a,z = forward(layers, biases, data)
     return layers, a[-1]
@@ -115,13 +117,15 @@ def back_prop(layers, biases, data, nums, step, runs):
 
 if __name__ == '__main__':
     nums, data = make_traindata()
-    nums = nums[:2]
-    data = data[:2]
-    layers, biases = make_layers(data.shape[1], 10, 2)
-    layers, output = back_prop(layers, biases, data, nums, .1, 100)
+    nums = nums[:2000]
+    data = data[:2000]
+    layers, biases = make_layers(data.shape[1], 10, 3)
+    layers, output = back_prop(layers, biases, data, nums, .1, 30)
     #a, z = forward(layers, biases, data)
     #output = a[-1]
     print(output[1])
     print(nums[1])
-    print(output[0])
-    print(nums[0])
+    print(output[8])
+    print(nums[8])
+    print(output[7])
+    print(nums[7])
