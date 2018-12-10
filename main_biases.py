@@ -116,7 +116,7 @@ def back_prop(layers, biases, data, nums, step, runs):
 
 
 if __name__ == '__main__':
-    #REALLY GOOD EXAMPLE
+    #really good example
 
     nums, data = make_traindata()
     nums = nums[:10]
