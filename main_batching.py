@@ -4,25 +4,30 @@ import random
 import math
 
 training = pd.read_csv('mnist_train.csv')
-#print(training.head())
-#This confirms that the data is there
+testing = pd.read_csv('mnist_test.csv')
+
 
 
 def make_traindata():
-    #tested and works
     nums = training.iloc[:,0]
     nums = nums.as_matrix()
     data = training.iloc[:,1:]
     data = data.as_matrix()
     return nums,data
 
+def make_testdata():
+    nums = testing.iloc[:,0]
+    nums = nums.as_matrix()
+    data = testing.iloc[:,1:]
+    data = data.as_matrix()
+    return nums,data
+
 def make_rand_layer(input, output):
-    #tested and works
     layer = (np.random.rand(input, output) - .5)
     return layer
 
 def make_layers(input_size, output_size, num):
-    hidden_size = 200
+    hidden_size = 50
     layers = []
     biases = []
     if(num <= 1):
@@ -41,7 +46,6 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 def sigmoid_all(x, func):
-    #tested and works
     sig = np.array([[func(i) for i in j] for j in x])
     return sig
 
@@ -58,24 +62,30 @@ def sigmoid_derivative(x):
     return sigmoid(x) * (1 - sigmoid(x))
 
 def d_loss_sum(num, y_hat):
-    #tested and works
     y = [0 for i in range(len(y_hat))]
     y[num] = 1
     return 2 * (y - y_hat)
 
 def d_loss_sum_all(nums, y_hats):
-    #tested and works
     sum = []
     for i in range(nums.shape[0]):
         sum.append(d_loss_sum(nums[i], y_hats[:][i]))
     return np.matrix(sum)
+def total_error(nums, output):
+    m = len(nums)
+    error = 0
+    for i in range(m):
+        y = [0 for i in range(len(output[0]))]
+        diff = (y - output[i]) ** 2
+        error += np.sum(diff)
+    return error / m
 
 def gradients(nums, a, z, layers, biases):
 
     d_layers = []
     d_biases = []
     d_cost = [np.multiply(-d_loss_sum_all(nums, a[-1]), sigmoid_all(z[-1], sigmoid_derivative))]
-    print("Current Cost: " + str(np.sum(d_cost)))
+    #print("Current Cost: " + str(np.sum(d_cost)))
     d_layers.append(np.dot(a[-2].T,d_cost[-1]))
     d_biases.append(np.sum(d_cost[-1]))
     for i in range(len(layers) - 2, -1, -1):
@@ -102,39 +112,49 @@ def back_prop(layers, biases, data, nums, step, batch, repeats):
     a,z = forward(layers, biases, data)
     return layers, a[-1]
 
+def save(layers, biases, modifier):
+    #modifier is a string so you can save different iterations
+    for i in range(len(layers)):
+        f1 = "./layer" + modifier + str(i) + ".csv"
+        f2 = "./bias" + modifier + str(i) + ".csv"
+        np.savetxt(f1, layers[i], delimiter=",")
+        np.savetxt(f2, biases[i], delimiter=",")
+def open(num, modifier):
+    layers = []
+    biases = []
+    for i in range(num):
+        layers.append(np.genfromtxt("layer" + modifier +  str(i) + ".csv",delimiter=','))
+
+        biases.append(np.genfromtxt("bias" + modifier + str(i) + ".csv",delimiter=','))
+    return layers, biases
 
 if __name__ == '__main__':
-    #really good example
 
     nums, data = make_traindata()
+    tnums, tdata = make_testdata()
+    nums = nums[:3000]
+    data = data[:3000]
+    tnums = nums[:100]
+    tdata = data[:100]
+    #layers, biases = make_layers(data.shape[1], 10, 3)
+    #save(layers, biases)
+    #print(biases[-1])
 
-    nums = nums[:10000]
-    data = data[:10000]
-    layers, biases = make_layers(data.shape[1], 10, 3)
-
-    a, z = forward(layers, biases, data)
-    print(a[-1][1])
-    print(nums[1])
+    layers, biases = open(3, "3l")
+    #a, z = forward(layers, biases, data)
+    #print(a[-1][1])
+    #print(nums[1])
 
 
-    layers, output = back_prop(layers, biases, data, nums, .1, 100,4)
+    layers, output = back_prop(layers, biases, data, nums, .1, 100,3)
+    a, z = forward(layers, biases, tdata)
+
+    output = a[-1]
+    print(output[14])
+    print(tnums[14])
     print(output[10])
-    print(nums[10])
-    print(output[8])
-    print(nums[8])
-    print(output[7])
-    print(nums[7])
-"""
-    #Example of how it poorly handles complexity:
-
-    nums, data = make_traindata()
-    nums = nums[:1000]
-    data = data[:1000]
-    layers, biases = make_layers(data.shape[1], 10, 3)
-    layers, output = back_prop(layers, biases, data, nums, .1, 20)
-    print(output[1])
-    print(nums[1])
-    print(output[8])
-    print(nums[8])
-    print(output[7])
-    print(nums[7])"""
+    print(tnums[10])
+    print(output[12])
+    print(tnums[12])
+    print(total_error(tnums, output))
+    save(layers, biases, "3l")
